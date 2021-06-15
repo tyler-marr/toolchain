@@ -654,6 +654,22 @@ unsigned int parse_half(char *&ptr)
 			ptr++;
 		}
 	}
+	// If this is binary
+	else if (*ptr == '0' && tolower(*(ptr + 1)) == 'b')
+	{
+		ptr += 2;
+		if (!isxdigit(*ptr))
+			error(input_filename, current_line, "Numeric value expected.", NULL);
+		while (isxdigit(*ptr))
+		{
+			value = value << 1;
+			if (*ptr == '1')
+				value |= 1;
+			else if (*ptr != '0')
+				error(input_filename, current_line, "0,1 expected in Binary immediate.", NULL);
+			ptr++;
+		}
+	}
 	else
 	{
 		bool negative = false;
@@ -716,7 +732,7 @@ void parse_line(char *buf)
 	//  cerr << "parse_line : " << buf << endl;
 
 	clean_up_line(buf);
-	chew_whitespace(buf);
+	chew_whitespace(buf);	
 	check_labels(buf);
 
 	//  cerr << "tohere";
@@ -1012,19 +1028,19 @@ void parse_line(char *buf)
 		//    cerr << "done.\n";
 		switch (insn_table[insn_num].operands[i])
 		{
-		case 'd':
+		case 'd'://destination register (genreal)
 			new_entry->data |= (decode_GPR(operands) & 0xf) << 24;
 			break;
-		case 'D':
+		case 'D'://destination register (special)
 			new_entry->data |= (decode_SPR(operands) & 0xf) << 24;
 			break;
-		case 's':
+		case 's'://source register (genreal)
 			new_entry->data |= (decode_GPR(operands) & 0xf) << 20;
 			break;
-		case 'S':
+		case 'S'://source register (special)
 			new_entry->data |= (decode_SPR(operands) & 0xf) << 20;
 			break;
-		case 't':
+		case 't'://2nd source register (genreal)
 			new_entry->data |= (decode_GPR(operands) & 0xf);
 			break;
 		case 'o': // Twenty bit offset
